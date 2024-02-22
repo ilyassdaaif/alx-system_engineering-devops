@@ -9,7 +9,6 @@ count=1
 while [ $count -le 20 ]
 do
 	echo "$count"
-	then
 	case $count in
 	        "4") echo "bad luck from China";;
 		"9") echo "bad luck from Japan";;
