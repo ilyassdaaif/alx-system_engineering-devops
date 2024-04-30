@@ -1,23 +1,19 @@
-class nginx_custom_header {
-
-  package { 'nginx':
-    ensure => installed,
-  }
-
-  file { '/etc/nginx/sites-available/default':
-    ensure  => file,
-    require => Package['nginx'],
-    content => template('nginx/default.erb'),
-    notify  => Service['nginx'],
-  }
-
-  service { 'nginx':
-    ensure => running,
-    enable => true,
-    require => File['/etc/nginx/sites-available/default'],
-  }
+#puppet advance
+exec { 'update':
+  command  => 'sudo apt-get update',
+  provider => shell,
 }
-
-node default {
-  include nginx_custom_header
+-> package {'nginx':
+  ensure => present,
+}
+-> file_line { 'header line':
+  ensure => present,
+  path   => '/etc/nginx/sites-available/default',
+  line   => "	location / {
+  add_header X-Served-By ${hostname};",
+  match  => '^\tlocation / {',
+}
+-> exec { 'restart service':
+  command  => 'sudo service nginx restart',
+  provider => shell,
 }
