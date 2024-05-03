@@ -1,5 +1,6 @@
+# HAProxy config file for ssl termination on LB side
 global
-        log /dev/log    local0
+	log /dev/log	local0
 	log /dev/log	local1 notice
 	chroot /var/lib/haproxy
 	stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
@@ -8,24 +9,36 @@ global
 	group haproxy
 	daemon
 
+	# Max connections
+	maxconn 2048
+	# Configure max size of temporary DHE keys that are generated
+	tune.ssl.default-dh-param 2048
+
 	# Default SSL material locations
-	ca-base /etc/ssl/certs
+	ca-base /etc/haproxy/certs
 	crt-base /etc/ssl/private
 
-	# See: https://ssl-config.mozilla.org/#server=haproxy&server-version=2.0.3&config=intermediate
-	ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-S>
-	ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
-	ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+	# Default ciphers to use on SSL-enabled listening sockets.
+	# For more information, see ciphers(1SSL). This list is from:
+	#  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
+	# An alternative list with additional directives can be obtained from
+	#  https://mozilla.github.io/server-side-tls/ssl-config-generator/?server=haproxy
+	ssl-default-bind-ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS
+	ssl-default-bind-options no-sslv3
 
 defaults
 	log	global
 	mode	http
 	option	httplog
 	option	dontlognull
-	timeout connect 5000
-	timeout client 	50000
-	timeout server 	50000
-	errorfile 400 /etc/haprox/errors/400.http
+        # Ensure forwarded request includes client's IP
+	option forwardfor
+	# Reduce latency between HAProxy and users by closing conns
+	option http-server-close
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+	errorfile 400 /etc/haproxy/errors/400.http
 	errorfile 403 /etc/haproxy/errors/403.http
 	errorfile 408 /etc/haproxy/errors/408.http
 	errorfile 500 /etc/haproxy/errors/500.http
@@ -33,19 +46,24 @@ defaults
 	errorfile 503 /etc/haproxy/errors/503.http
 	errorfile 504 /etc/haproxy/errors/504.http
 
-frontend ilyassdaaif-frontend
+frontend www-frontend
 	bind *:80
-	mode http
-	http-request redirect scheme https code 301 unless { ssl_fc }
-	http-request set-header X_Forwarded-Proto http
-	default_backend clickviral-backend
+	reqadd X-Forwarded-Proto:\ http
+	# if configuration for certbot pass to certbot backend
+	acl letsencrypt-acl path_beg /.well-known/acme-challenge/
+	use_backend le-certbot-backend if letsencrypt-acl
 
-frontend ilyassdaaif-frontend-https
-	bind *:443 ssl crt /etc/haproxy/certs/ilyassdaaif.tech.pem
-	http-request set-header X-Forwarded-Proto https
-	default_backend clickviral-backend
+	default_backend www-backend
 
-backend ilyassdaaif-backend
-	balance roundrobin
-	server 373783-web-01 100.26.165.118:80 check
-	server 373783-web-02 100.25.4.103:80 check
+frontend www-https-frontend
+	bind *:443 ssl crt /etc/haproxy/certs/bennettdixon.online.pem
+	reqadd X-Forwarded-Proto:\ https
+	default_backend www-backend
+
+backend le-certbot-backend
+	server letsencrypt 127.0.0.1:8888
+
+backend www-backend
+        balance roundrobin
+	server 373783-web-01 100.26.165.118:80
+	server 373783-web-02 100.25.4.103:80
