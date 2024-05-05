@@ -1,4 +1,5 @@
 #!/bin/bash
-
-echo "nginx is not running" > /etc/init.d/nginx
+service nginx stop
+service nginx start
+sleep 1
 service nginx status
