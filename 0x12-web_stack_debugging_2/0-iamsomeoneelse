@@ -1,9 +1,18 @@
-#!/bin/bash
-# This script runs the 'whoami' command under the user specified as an argument.
+#!/usr/bin/env bash
+# Enhanced script with error handling
 
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <username>"
     exit 1
 fi
 
-sudo -u $1 whoami
+# Attempt to run 'whoami' under the specified user and capture any errors
+output=$(sudo -u "$1" whoami 2>&1)
+status=$?
+
+if [ $status -ne 0 ]; then
+    echo "Error running whoami for user $1: $output"
+    exit $status
+else
+    echo $output
+fi
