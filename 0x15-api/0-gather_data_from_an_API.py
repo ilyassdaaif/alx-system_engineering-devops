@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 """
-write a Python script that, using this REST API:
+Write a Python script that, using this REST API:
 https://jsonplaceholder.typicode.com/
 
 a) Employee ID
 b) Information about his/her TODO list progress.
-c) YOU must use urllib or requests module
-d) Script must accept an integer as a parameter, which is the employee ID
+c) You must use urllib or requests module
+d) The script must accept an integer as a parameter, which is the employee ID
 e) Display employee TODO list progress in this exact format:
 
 First line: Employee EMPLOYEE_NAME is done
@@ -20,28 +20,35 @@ import requests
 import sys
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2 or not sys.argv[1].isdigit():
+        print("Usage: {} <employee_id>".format(sys.argv[0]))
+        sys.exit(1)
+
+    employee_id = int(sys.argv[1])
     url = "https://jsonplaceholder.typicode.com/"
 
-    employee_id = sys.argv[1]
-
-    user_response = requests.get(url + "users/{}".format(employee_id))
+    try:
+        user_response = requests.get(url + "users/{}".format(employee_id))
+        user_response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching user data: {e}")
+        sys.exit(1)
 
     user = user_response.json()
 
-    params = {"userId": employee_id}
-
-    todos_response = requests.get(url + "todos", params=params)
+    try:
+        todos_response = requests.get(url + "todos", params={"userId": employee_id})
+        todos_response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching TODO data: {e}")
+        sys.exit(1)
 
     todos = todos_response.json()
 
-    completed = []
+    completed = [todo.get("title") for todo in todos if todo.get("completed")]
 
-    for todo in todos:
-        if todo.get("completed") is True:
-            completed.append(todo.get("title"))
-
-    print("Employee {} is done with tasks({}/{})".format(
+    print("Employee {} is done with tasks({}/{}):".format(
         user.get("name"), len(completed), len(todos)))
 
-    for complete in completed:
-        print("\t {}".format(complete))
+    for title in completed:
+        print("\t {}".format(title))
