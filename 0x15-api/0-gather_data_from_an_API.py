@@ -37,8 +37,7 @@ if __name__ == "__main__":
     user = user_response.json()
 
     try:
-        todos_response = requests.get
-        (url + "todos", params={"userId": employee_id})
+        todos_response = requests.get(url + "todos", params={"userId": employee_id})
         todos_response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"Error fetching TODO data: {e}")
