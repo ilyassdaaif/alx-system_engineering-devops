@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 """
-write a Python script that,
-using this REST API:
+write a Python script that, using this REST API:
 https://jsonplaceholder.typicode.com/
 
-a)employee ID
-b)information about his/her TODO list progress.
-c)YOU must use urllib or requests module
-d)  script must accept an integer as a parameter, which is the employee ID
-e)   display employee TODO list progress in this exact format:
+a) Employee ID
+b) Information about his/her TODO list progress.
+c) YOU must use urllib or requests module
+d) Script must accept an integer as a parameter, which is the employee ID
+e) Display employee TODO list progress in this exact format:
 
 First line: Employee EMPLOYEE_NAME is done
 with tasks(NUMBER_OF_DONE_TASKS/TOTAL_NUMBER_OF_TASKS):
