@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """
-write a Python script that, using this REST API:
+write a Python script that,
+using this REST API:
 https://jsonplaceholder.typicode.com/
 
 a)employee ID
