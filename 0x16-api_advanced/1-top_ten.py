@@ -1,22 +1,18 @@
 #!/usr/bin/python3
-""" Exporting csv files """
-import requests
+"""Module for task 1"""
 
 
 def top_ten(subreddit):
-    url = f"ttps://www.reddit.com/r/{subreddit}/hot.json?limit=10"
-    headers = {"User-Agent": "CustomUserAgent"}
+    """Queries the Reddit API and returns the top 10 hot posts
+    of the subreddit"""
+    import requests
 
-    try:
-        response = requests.get(url, headers=headers, allow_redirects=False)
-        if response.status_code == 200:
-            data = response.json()
-            for post in data['data']['childern']:
-                print(post['data']['title'])
-        else:
-            print(None)
-    except requests.RequestException:
-        print(None)
-
-if __name__ == "__main__":
-    top_ten("programming")
+    sub_info = requests.get("https://www.reddit.com/r/{}/hot.json?limit=10"
+                            .format(subreddit),
+                            headers={"User-Agent": "My-User-Agent"},
+                            allow_redirects=False)
+    if sub_info.status_code >= 300:
+        print('None')
+    else:
+        [print(child.get("data").get("title"))
+         for child in sub_info.json().get("data").get("children")]
