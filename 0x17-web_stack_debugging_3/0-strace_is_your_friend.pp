@@ -1,10 +1,6 @@
-file { '/etc/apache2/apache2.conf':
-  ensure => file,
-  mode   => '0644',
-}
+# Creat a manifest that fix all termintion of phpp.
 
-service { 'apache2':
-  ensure => running,
-  enable => true,
-  require => File['/etc/apache2/apache2.conf'],
+exec { 'fix_phpp':
+  command => 'sed -i s/phpp/php/g /var/www/html/wp-settings.php',
+  path    => ['/bin', '/usr/bin/', '/usr/loca/bin/'],
 }
