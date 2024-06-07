@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 My First Postmortem
 
 Issue Summary
@@ -54,3 +55,6 @@ TODO List:
  4. Implement an automated rollback mechanism for infrastructure changes.
 
  5. Review and enhance incident response procedures to reduce detection and resolution times.
+=======
+
+>>>>>>> 14974f92c6462e4e9063372af0a6ba813ab168ac
